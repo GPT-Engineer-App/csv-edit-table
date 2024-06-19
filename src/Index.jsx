@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, Input } from '@chakra-ui/react';
-import CSVReader from 'react-csv-reader';
-import { CSVLink } from 'react-csv';
+import { CSVReader, CSVDownloader } from 'react-papaparse';
 
 const Index = () => {
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
 
-  const handleFileLoad = (data) => {
+  const handleFileLoad = (results) => {
+    const data = results.data;
     if (data.length > 0) {
       setHeaders(data[0]);
       setData(data.slice(1));
@@ -32,7 +32,7 @@ const Index = () => {
 
   return (
     <Box p={4}>
-      <CSVReader onFileLoaded={handleFileLoad} />
+      <CSVReader onFileLoad={handleFileLoad} />
       {data.length > 0 && (
         <Box mt={4}>
           <Table variant="simple">
@@ -68,9 +68,13 @@ const Index = () => {
             Add Row
           </Button>
           <Button mt={4} ml={4} colorScheme="blue">
-            <CSVLink data={[headers, ...data]} filename={"edited_data.csv"}>
+            <CSVDownloader
+              data={[headers, ...data]}
+              filename={"edited_data.csv"}
+              type="button"
+            >
               Download CSV
-            </CSVLink>
+            </CSVDownloader>
           </Button>
         </Box>
       )}
