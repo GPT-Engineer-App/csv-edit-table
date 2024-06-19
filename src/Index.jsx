@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, Input } from '@chakra-ui/react';
-import { CSVReader, CSVDownloader } from 'react-papaparse';
+import Papa from 'papaparse';
 
 const Index = () => {
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
 
-  const handleFileLoad = (results) => {
-    const data = results.data;
-    if (data.length > 0) {
-      setHeaders(data[0]);
-      setData(data.slice(1));
-    }
+  const handleFileLoad = (event) => {
+    const file = event.target.files[0];
+    Papa.parse(file, {
+      complete: (results) => {
+        const data = results.data;
+        if (data.length > 0) {
+          setHeaders(data[0]);
+          setData(data.slice(1));
+        }
+      }
+    });
   };
 
   const handleCellChange = (rowIndex, columnIndex, value) => {
@@ -30,9 +35,20 @@ const Index = () => {
     setData(newData);
   };
 
+  const downloadCSV = () => {
+    const csv = Papa.unparse([headers, ...data]);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'edited_data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Box p={4}>
-      <CSVReader onFileLoad={handleFileLoad} />
+      <input type="file" accept=".csv" onChange={handleFileLoad} />
       {data.length > 0 && (
         <Box mt={4}>
           <Table variant="simple">
@@ -67,14 +83,8 @@ const Index = () => {
           <Button mt={4} colorScheme="teal" onClick={addRow}>
             Add Row
           </Button>
-          <Button mt={4} ml={4} colorScheme="blue">
-            <CSVDownloader
-              data={[headers, ...data]}
-              filename={"edited_data.csv"}
-              type="button"
-            >
-              Download CSV
-            </CSVDownloader>
+          <Button mt={4} ml={4} colorScheme="blue" onClick={downloadCSV}>
+            Download CSV
           </Button>
         </Box>
       )}
