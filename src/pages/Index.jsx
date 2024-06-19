@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import { MdAdd, MdDelete } from 'react-icons/md';
 import { CSVReader } from 'react-papaparse';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
@@ -72,7 +72,7 @@ const Index = () => {
                   <Td>
                     <IconButton
                       aria-label="Delete row"
-                      icon={<DeleteIcon />}
+                      icon={<MdDelete />}
                       onClick={() => handleRemoveRow(row.id)}
                     />
                   </Td>
@@ -80,7 +80,7 @@ const Index = () => {
               ))}
             </Tbody>
           </Table>
-          <Button leftIcon={<AddIcon />} onClick={handleAddRow} mt={4}>
+          <Button leftIcon={<MdAdd />} onClick={handleAddRow} mt={4}>
             Add Row
           </Button>
           <Button colorScheme="blue" onClick={handleDownload} mt={4} ml={4}>
