@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, Input } from '@chakra-ui/react';
-import Papa from 'papaparse';
+import { readString, jsonToCSV } from 'react-papaparse';
 
 const Index = () => {
   const [data, setData] = useState([]);
@@ -8,15 +8,16 @@ const Index = () => {
 
   const handleFileLoad = (event) => {
     const file = event.target.files[0];
-    Papa.parse(file, {
-      complete: (results) => {
-        const data = results.data;
-        if (data.length > 0) {
-          setHeaders(data[0]);
-          setData(data.slice(1));
-        }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const results = readString(text, { header: true });
+      if (results.data.length > 0) {
+        setHeaders(Object.keys(results.data[0]));
+        setData(results.data);
       }
-    });
+    };
+    reader.readAsText(file);
   };
 
   const handleCellChange = (rowIndex, columnIndex, value) => {
@@ -26,7 +27,7 @@ const Index = () => {
   };
 
   const addRow = () => {
-    const newRow = headers.map(() => '');
+    const newRow = headers.reduce((acc, header) => ({ ...acc, [header]: '' }), {});
     setData([...data, newRow]);
   };
 
@@ -36,7 +37,7 @@ const Index = () => {
   };
 
   const downloadCSV = () => {
-    const csv = Papa.unparse([headers, ...data]);
+    const csv = jsonToCSV(data);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -63,11 +64,11 @@ const Index = () => {
             <Tbody>
               {data.map((row, rowIndex) => (
                 <Tr key={rowIndex}>
-                  {row.map((cell, columnIndex) => (
+                  {headers.map((header, columnIndex) => (
                     <Td key={columnIndex}>
                       <Input
-                        value={cell}
-                        onChange={(e) => handleCellChange(rowIndex, columnIndex, e.target.value)}
+                        value={row[header]}
+                        onChange={(e) => handleCellChange(rowIndex, header, e.target.value)}
                       />
                     </Td>
                   ))}
