@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Box, Button, Input, Table, Thead, Tbody, Tr, Th, Td, IconButton } from '@chakra-ui/react';
 import { MdAdd, MdDelete } from 'react-icons/md';
-import { CSVReader } from 'react-papaparse';
+import { useCSVReader } from 'react-papaparse';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
 
 const Index = () => {
   const [data, setData] = useState([]);
   const [headers, setHeaders] = useState([]);
+  const { CSVReader } = useCSVReader();
 
   const handleOnDrop = (data) => {
     const headers = data[0].meta.fields;
@@ -44,8 +45,14 @@ const Index = () => {
 
   return (
     <Box p={4}>
-      <CSVReader onDrop={handleOnDrop} onError={handleOnError} addRemoveButton>
-        <span>Drop CSV file here or click to upload.</span>
+      <CSVReader onUploadAccepted={handleOnDrop} onError={handleOnError}>
+        {({ getRootProps, acceptedFile }) => (
+          <>
+            <div {...getRootProps()} style={{ border: '1px dashed #ccc', padding: '10px', cursor: 'pointer' }}>
+              {acceptedFile ? acceptedFile.name : 'Drop CSV file here or click to upload.'}
+            </div>
+          </>
+        )}
       </CSVReader>
       {data.length > 0 && (
         <>
